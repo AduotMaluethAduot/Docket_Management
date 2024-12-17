@@ -1,11 +1,22 @@
 <?php
-require_once '../includes/header.php';
+session_start();
 require_once '../db/config.php';
+
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Redirect if already logged in
+if (isset($_SESSION['user_id'])) {
+    header("Location: admin_dashboard.php");
+    exit();
+}
+
+$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
     $password = $_POST['password'];
-    $error = '';
 
     if (empty($username) || empty($password)) {
         $error = "Both username and password are required";
@@ -32,43 +43,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<div class="container">
-    <div class="auth-form">
-        <h2>Login</h2>
-        
-        <?php if (isset($error) && !empty($error)): ?>
-            <div class="alert alert-danger">
-                <?php echo htmlspecialchars($error); ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if (isset($_SESSION['success_message'])): ?>
-            <div class="alert alert-success">
-                <?php 
-                echo htmlspecialchars($_SESSION['success_message']);
-                unset($_SESSION['success_message']);
-                ?>
-            </div>
-        <?php endif; ?>
-
-        <form method="POST" action="">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-
-            <button type="submit" class="btn-primary">Login</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Case Management System</title>
+    <link rel="stylesheet" href="../css/forms.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-form">
+            <h2>Login</h2>
             
-            <div class="auth-links">
-                Don't have an account? <a href="signup.php">Sign up here</a>
-            </div>
-        </form>
-    </div>
-</div>
+            <?php if (isset($_SESSION['success_message'])): ?>
+                <div class="alert alert-success">
+                    <?php 
+                    echo htmlspecialchars($_SESSION['success_message']);
+                    unset($_SESSION['success_message']);
+                    ?>
+                </div>
+            <?php endif; ?>
 
-<?php require_once '../includes/footer.php'; ?>
+            <?php if (!empty($error)): ?>
+                <div class="alert alert-danger">
+                    <?php echo htmlspecialchars($error); ?>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <button type="submit" class="btn-primary">Login</button>
+                
+                <div class="auth-links">
+                    Don't have an account? <a href="signup.php">Sign up here</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
