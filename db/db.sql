@@ -120,3 +120,12 @@ INSERT INTO case_history (case_id, action, description, created_by) VALUES
 (1, 'Case Filed', 'Initial case filing completed', 1),
 (2, 'Document Added', 'Added arrest report to case file', 1),
 (3, 'Status Update', 'Case moved to active status', 1);
+
+-- Verify tables exist
+SELECT 
+    TABLE_NAME 
+FROM 
+    information_schema.TABLES 
+WHERE 
+    TABLE_SCHEMA = 'webtech_fall2024_aduot_jok' 
+    AND TABLE_NAME IN ('cases', 'case_history', 'lawyers', 'clients');

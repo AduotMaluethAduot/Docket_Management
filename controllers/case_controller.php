@@ -7,33 +7,37 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
+// Debug logging
+error_log("=== Case Controller Started ===");
+error_log("Session data: " . print_r($_SESSION, true));
+error_log("Request Method: " . $_SERVER['REQUEST_METHOD']);
+
 // Initialize response
 $response = ['success' => false, 'message' => ''];
 
 try {
-    // Verify database connection
-    if (!$conn || $conn->connect_error) {
-        throw new Exception("Database connection failed: " . ($conn ? $conn->connect_error : "Connection is null"));
-    }
-
-    // Check session
-    if (!isset($_SESSION['user_id'])) {
-        throw new Exception("User not authenticated");
-    }
-
     // Get and validate JSON input
     $jsonInput = file_get_contents('php://input');
-    if (empty($jsonInput)) {
-        throw new Exception("No input received");
-    }
-
+    error_log("Raw input: " . $jsonInput);
+    
     $input = json_decode($jsonInput, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception("Invalid JSON: " . json_last_error_msg());
+        throw new Exception("JSON decode error: " . json_last_error_msg());
     }
+    error_log("Decoded input: " . print_r($input, true));
 
+    // Verify database connection
+    if (!$conn) {
+        throw new Exception("Database connection is null");
+    }
+    if ($conn->connect_error) {
+        throw new Exception("Database connection error: " . $conn->connect_error);
+    }
+    error_log("Database connection verified");
+
+    // Basic validation
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception("Invalid request method");
+        throw new Exception("Invalid request method: " . $_SERVER['REQUEST_METHOD']);
     }
 
     if (!isset($input['action'])) {
@@ -41,6 +45,8 @@ try {
     }
 
     if ($input['action'] === 'add') {
+        error_log("Processing add action");
+        
         // Validate required fields
         $required = ['case_number', 'case_title', 'client_id', 'lawyer_id', 'case_type', 'filing_date'];
         foreach ($required as $field) {
@@ -48,27 +54,31 @@ try {
                 throw new Exception("$field is required");
             }
         }
-
-        // Validate client exists
-        $clientStmt = $conn->prepare("SELECT id FROM clients WHERE id = ?");
-        $clientStmt->bind_param("i", $input['client_id']);
-        $clientStmt->execute();
-        if ($clientStmt->get_result()->num_rows === 0) {
-            throw new Exception("Invalid client ID");
-        }
-
-        // Validate lawyer exists
-        $lawyerStmt = $conn->prepare("SELECT id FROM lawyers WHERE id = ?");
-        $lawyerStmt->bind_param("i", $input['lawyer_id']);
-        $lawyerStmt->execute();
-        if ($lawyerStmt->get_result()->num_rows === 0) {
-            throw new Exception("Invalid lawyer ID");
-        }
+        error_log("Required fields validated");
 
         // Insert case
-        $query = "INSERT INTO cases (case_number, case_title, client_id, lawyer_id, case_type, filing_date, description) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO cases (
+            case_number, 
+            case_title, 
+            client_id, 
+            lawyer_id, 
+            case_type, 
+            case_status,
+            description, 
+            filing_date
+        ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)";
         
+        error_log("Preparing query: " . $query);
+        error_log("Values to be inserted: " . print_r([
+            'case_number' => $input['case_number'],
+            'case_title' => $input['case_title'],
+            'client_id' => $input['client_id'],
+            'lawyer_id' => $input['lawyer_id'],
+            'case_type' => $input['case_type'],
+            'description' => $input['description'] ?? '',
+            'filing_date' => $input['filing_date']
+        ], true));
+
         $stmt = $conn->prepare($query);
         if (!$stmt) {
             throw new Exception("Prepare failed: " . $conn->error);
@@ -81,29 +91,30 @@ try {
             $input['client_id'],
             $input['lawyer_id'],
             $input['case_type'],
-            $input['filing_date'],
-            $input['description'] ?? ''
+            $input['description'] ?? '',
+            $input['filing_date']
         );
 
         if (!$stmt->execute()) {
-            throw new Exception("Failed to add case: " . $stmt->error);
+            throw new Exception("Execute failed: " . $stmt->error);
         }
 
         $case_id = $conn->insert_id;
+        error_log("Case inserted successfully with ID: " . $case_id);
 
         // Add case history
-        $historyQuery = "INSERT INTO case_history (case_id, action, description, created_by) VALUES (?, ?, ?, ?)";
-        $historyStmt = $conn->prepare($historyQuery);
-        if (!$historyStmt) {
-            throw new Exception("Failed to prepare history statement: " . $conn->error);
+        $history_query = "INSERT INTO case_history (case_id, action, description, created_by) 
+                         VALUES (?, 'Case Created', 'New case added', ?)";
+        
+        $history_stmt = $conn->prepare($history_query);
+        if (!$history_stmt) {
+            throw new Exception("History prepare failed: " . $conn->error);
         }
 
-        $action = "Case Created";
-        $description = "New case added";
-        $historyStmt->bind_param("issi", $case_id, $action, $description, $_SESSION['user_id']);
+        $history_stmt->bind_param("ii", $case_id, $_SESSION['user_id']);
         
-        if (!$historyStmt->execute()) {
-            throw new Exception("Failed to add case history: " . $historyStmt->error);
+        if (!$history_stmt->execute()) {
+            throw new Exception("History execute failed: " . $history_stmt->error);
         }
 
         $response = [
@@ -111,15 +122,18 @@ try {
             'message' => 'Case added successfully',
             'case_id' => $case_id
         ];
+        error_log("Case and history added successfully");
     } else {
-        throw new Exception("Invalid action");
+        throw new Exception("Invalid action: " . $input['action']);
     }
 
 } catch (Exception $e) {
-    error_log("Error in case_controller.php: " . $e->getMessage());
+    error_log("ERROR in case_controller.php: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
     $response['message'] = $e->getMessage();
 }
 
+error_log("Sending response: " . json_encode($response));
 echo json_encode($response);
 exit;
 ?> 
