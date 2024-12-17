@@ -7,6 +7,12 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // Turn off HTML error display
 
+// Check authentication
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+    exit;
+}
+
 // Get JSON input
 $input = json_decode(file_get_contents('php://input'), true);
 $response = ['success' => false, 'message' => ''];

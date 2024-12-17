@@ -2,6 +2,8 @@
 require_once '../includes/header.php';
 require_once '../db/config.php';
 
+
+
 // Get cases for dropdown
 $casesQuery = $conn->query("
     SELECT c.id, c.case_number, c.case_title 

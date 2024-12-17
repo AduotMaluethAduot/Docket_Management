@@ -3,6 +3,7 @@ session_start();
 require_once '../includes/header.php';
 require_once '../db/config.php';
 
+
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -103,11 +104,21 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('addCaseForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    const formData = new FormData(this);
-    const data = {};
-    formData.forEach((value, key) => data[key] = value);
-    
     try {
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => {
+            // Convert client_id and lawyer_id to integers
+            if (key === 'client_id' || key === 'lawyer_id') {
+                data[key] = parseInt(value);
+            } else {
+                data[key] = value;
+            }
+        });
+        
+        // Debug log
+        console.log('Sending data:', data);
+        
         const response = await fetch('../controllers/case_controller.php', {
             method: 'POST',
             headers: {
@@ -117,14 +128,18 @@ document.getElementById('addCaseForm').addEventListener('submit', async function
             body: JSON.stringify({
                 action: 'add',
                 ...data
-            })
+            }),
+            credentials: 'include' // Important for sending cookies/session
         });
 
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server response:', errorText);
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const result = await response.json();
+        console.log('Server response:', result);
         
         if (result.success) {
             alert('Case added successfully');
@@ -134,7 +149,7 @@ document.getElementById('addCaseForm').addEventListener('submit', async function
         }
     } catch (error) {
         console.error('Error details:', error);
-        alert('An error occurred while adding the case. Please check the console for details.');
+        alert('An error occurred: ' + error.message);
     }
 });
 </script>

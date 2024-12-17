@@ -4,11 +4,17 @@ require_once '../db/config.php';
 
 // Set headers
 header('Content-Type: application/json');
+ini_set('display_errors', 1);
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
 
 // Initialize response
 $response = ['success' => false, 'message' => ''];
+
+// At the top after session_start()
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+    exit;
+}
 
 try {
     // Verify database connection

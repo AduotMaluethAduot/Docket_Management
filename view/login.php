@@ -31,6 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
+                
+                error_log("User logged in - ID: " . $user['id'] . ", Username: " . $user['username']);
+                
                 header("Location: admin_dashboard.php");
                 exit();
             } else {

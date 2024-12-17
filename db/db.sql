@@ -129,3 +129,20 @@ FROM
 WHERE 
     TABLE_SCHEMA = 'webtech_fall2024_aduot_jok' 
     AND TABLE_NAME IN ('cases', 'case_history', 'lawyers', 'clients');
+
+-- Check if user has proper permissions
+GRANT ALL PRIVILEGES ON webtech_fall2024_aduot_jok.* TO 'aduot.jok'@'localhost';
+FLUSH PRIVILEGES;
+
+-- Verify foreign key constraints
+ALTER TABLE cases
+    ADD CONSTRAINT fk_case_client
+    FOREIGN KEY (client_id) REFERENCES clients(id),
+    ADD CONSTRAINT fk_case_lawyer
+    FOREIGN KEY (lawyer_id) REFERENCES lawyers(id);
+
+ALTER TABLE case_history
+    ADD CONSTRAINT fk_history_case
+    FOREIGN KEY (case_id) REFERENCES cases(id),
+    ADD CONSTRAINT fk_history_user
+    FOREIGN KEY (created_by) REFERENCES users(id);
