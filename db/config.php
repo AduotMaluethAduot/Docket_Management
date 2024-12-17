@@ -27,4 +27,6 @@ try {
     error_log("Database connection error: " . $e->getMessage());
     die("Database connection error: " . $e->getMessage());
 }
+
+error_log("Attempting database connection...");
 ?>
