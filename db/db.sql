@@ -1,3 +1,5 @@
+-- Drop database if it exists
+DROP DATABASE IF EXISTS webtech_fall2024_aduot_jok;
 -- Create database if it doesn't exist
 CREATE DATABASE IF NOT EXISTS webtech_fall2024_aduot_jok;
 USE webtech_fall2024_aduot_jok;
