@@ -61,22 +61,13 @@ $clients = $clientsQuery ? $clientsQuery->fetch_all(MYSQLI_ASSOC) : [];
         </div>
 
         <div class="form-group">
-            <label for="case_status">Status</label>
-            <select id="case_status" name="case_status" required>
-                <option value="pending">Pending</option>
-                <option value="active">Active</option>
-                <option value="closed">Closed</option>
-            </select>
+            <label for="filing_date">Filing Date</label>
+            <input type="date" id="filing_date" name="filing_date" required>
         </div>
 
         <div class="form-group">
             <label for="description">Description</label>
             <textarea id="description" name="description" rows="4"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="filing_date">Filing Date</label>
-            <input type="date" id="filing_date" name="filing_date" required>
         </div>
 
         <div class="form-actions">
@@ -87,6 +78,19 @@ $clients = $clientsQuery ? $clientsQuery->fetch_all(MYSQLI_ASSOC) : [];
 </div>
 
 <script>
+// Set default filing date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('filing_date').value = today;
+    
+    // Auto-generate case number
+    const year = new Date().getFullYear();
+    const month = String(new Date().getMonth() + 1).padStart(2, '0');
+    const random = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+    document.getElementById('case_number').value = `${year}${month}-${random}`;
+});
+
+// Form submission
 document.getElementById('addCaseForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -99,6 +103,7 @@ document.getElementById('addCaseForm').addEventListener('submit', async function
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 action: 'add',
@@ -107,7 +112,7 @@ document.getElementById('addCaseForm').addEventListener('submit', async function
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const result = await response.json();
@@ -119,19 +124,9 @@ document.getElementById('addCaseForm').addEventListener('submit', async function
             throw new Error(result.message || 'Failed to add case');
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert(error.message || 'An error occurred while adding the case');
+        console.error('Error details:', error);
+        alert('An error occurred while adding the case. Please check the console for details.');
     }
-});
-
-// Auto-generate case number
-document.addEventListener('DOMContentLoaded', function() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const random = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
-    const caseNumber = `${year}${month}-${random}`;
-    document.getElementById('case_number').value = caseNumber;
 });
 </script>
 
