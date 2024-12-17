@@ -1,36 +1,56 @@
 <?php
+session_start();
 require_once '../db/config.php';
+
+// Set headers
+header('Content-Type: application/json');
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Turn off HTML error display
 
 // Get JSON input
 $input = json_decode(file_get_contents('php://input'), true);
 $response = ['success' => false, 'message' => ''];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($input['action'])) {
-        switch ($input['action']) {
-            case 'add':
-                // Validate required fields
-                $required = ['case_number', 'case_title', 'client_id', 'lawyer_id', 'case_type', 'filing_date'];
-                foreach ($required as $field) {
-                    if (!isset($input[$field]) || empty($input[$field])) {
-                        $response['message'] = ucfirst(str_replace('_', ' ', $field)) . ' is required';
-                        echo json_encode($response);
-                        exit;
+try {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($input['action'])) {
+            switch ($input['action']) {
+                case 'add':
+                    // Validate required fields
+                    $required = ['case_number', 'case_title', 'client_id', 'lawyer_id', 'case_type', 'filing_date'];
+                    foreach ($required as $field) {
+                        if (!isset($input[$field]) || empty($input[$field])) {
+                            throw new Exception(ucfirst(str_replace('_', ' ', $field)) . ' is required');
+                        }
                     }
-                }
 
-                // Prepare and execute insert query
-                $query = "INSERT INTO cases (case_number, case_title, client_id, lawyer_id, case_type, case_status, description, filing_date) 
-                         VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)";
-                
-                try {
+                    // Check if case number already exists
+                    $check_stmt = $conn->prepare("SELECT id FROM cases WHERE case_number = ?");
+                    $check_stmt->bind_param("s", $input['case_number']);
+                    $check_stmt->execute();
+                    if ($check_stmt->get_result()->num_rows > 0) {
+                        throw new Exception("Case number already exists");
+                    }
+
+                    // Insert new case
+                    $query = "INSERT INTO cases (
+                        case_number, 
+                        case_title, 
+                        client_id, 
+                        lawyer_id, 
+                        case_type, 
+                        case_status,
+                        description, 
+                        filing_date
+                    ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)";
+                    
                     $stmt = $conn->prepare($query);
                     if (!$stmt) {
                         throw new Exception("Prepare failed: " . $conn->error);
                     }
 
                     $stmt->bind_param(
-                        'ssiisss',
+                        "ssiisss",
                         $input['case_number'],
                         $input['case_title'],
                         $input['client_id'],
@@ -44,7 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $case_id = $conn->insert_id;
                         
                         // Add to case history
-                        $history_query = "INSERT INTO case_history (case_id, action, description, created_by) VALUES (?, 'Case Created', 'New case added', ?)";
+                        $history_query = "INSERT INTO case_history (case_id, action, description, created_by) 
+                                        VALUES (?, 'Case Created', 'New case added', ?)";
                         $history_stmt = $conn->prepare($history_query);
                         $history_stmt->bind_param('ii', $case_id, $_SESSION['user_id']);
                         $history_stmt->execute();
@@ -57,66 +78,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } else {
                         throw new Exception($stmt->error);
                     }
-                } catch (Exception $e) {
-                    $response['message'] = 'Failed to add case: ' . $e->getMessage();
-                    error_log("Case addition error: " . $e->getMessage());
-                }
-                break;
-
-            case 'update':
-                // Similar structure for updating cases
-                break;
-
-            case 'delete':
-                if (!isset($input['id'])) {
-                    $response['message'] = 'Case ID is required';
                     break;
-                }
 
-                try {
-                    // Start transaction
-                    $conn->begin_transaction();
-
-                    // Delete related records first
-                    $tables = ['case_history', 'case_hearings', 'documents'];
-                    foreach ($tables as $table) {
-                        $query = "DELETE FROM $table WHERE case_id = ?";
-                        $stmt = $conn->prepare($query);
-                        $stmt->bind_param('i', $input['id']);
-                        $stmt->execute();
-                    }
-
-                    // Delete the case
-                    $query = "DELETE FROM cases WHERE id = ?";
-                    $stmt = $conn->prepare($query);
-                    $stmt->bind_param('i', $input['id']);
-
-                    if ($stmt->execute()) {
-                        $conn->commit();
-                        $response = [
-                            'success' => true,
-                            'message' => 'Case deleted successfully'
-                        ];
-                    } else {
-                        throw new Exception($stmt->error);
-                    }
-                } catch (Exception $e) {
-                    $conn->rollback();
-                    $response['message'] = 'Failed to delete case: ' . $e->getMessage();
-                    error_log("Case deletion error: " . $e->getMessage());
-                }
-                break;
-
-            default:
-                $response['message'] = 'Invalid action';
-                break;
+                default:
+                    throw new Exception('Invalid action');
+            }
+        } else {
+            throw new Exception('Action is required');
         }
     } else {
-        $response['message'] = 'Action is required';
+        throw new Exception('Invalid request method');
     }
-} else {
-    $response['message'] = 'Invalid request method';
+} catch (Exception $e) {
+    $response['message'] = $e->getMessage();
+    error_log("Case controller error: " . $e->getMessage());
 }
 
+// Ensure clean output
+ob_clean();
 echo json_encode($response);
+exit;
 ?> 
