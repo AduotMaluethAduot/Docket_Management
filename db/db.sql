@@ -41,7 +41,7 @@ CREATE TABLE clients (
 );
 
 -- Cases table
-CREATE TABLE cases (
+CREATE TABLE IF NOT EXISTS cases (
     id INT PRIMARY KEY AUTO_INCREMENT,
     case_number VARCHAR(20) UNIQUE NOT NULL,
     case_title VARCHAR(255) NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE documents (
 );
 
 -- Case History table for tracking case updates
-CREATE TABLE case_history (
+CREATE TABLE IF NOT EXISTS case_history (
     id INT PRIMARY KEY AUTO_INCREMENT,
     case_id INT NOT NULL,
     action VARCHAR(255) NOT NULL,
