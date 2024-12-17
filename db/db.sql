@@ -1,9 +1,3 @@
-USE webtech_fall2024_aduot_jok;
-SET FOREIGN_KEY_CHECKS = 0; -- Temporarily disable foreign key checks
-DROP TABLE IF EXISTS users, lawyers, clients, cases, documents, case_history, case_hearings;
-SET FOREIGN_KEY_CHECKS = 1; -- Re-enable foreign key checks
--- Drop database if it exists
-DROP DATABASE IF EXISTS webtech_fall2024_aduot_jok;
 -- Create database if it doesn't exist
 CREATE DATABASE IF NOT EXISTS webtech_fall2024_aduot_jok;
 USE webtech_fall2024_aduot_jok;
