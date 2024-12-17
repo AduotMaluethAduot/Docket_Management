@@ -163,7 +163,7 @@ document.getElementById('addLawyerForm').addEventListener('submit', async functi
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const result = await response.json();
@@ -175,8 +175,8 @@ document.getElementById('addLawyerForm').addEventListener('submit', async functi
             throw new Error(result.message || 'Failed to add lawyer');
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert(error.message || 'An error occurred while adding the lawyer');
+        console.error('Error details:', error);
+        alert('An error occurred while adding the lawyer. Please check the console for details.');
     }
 });
 

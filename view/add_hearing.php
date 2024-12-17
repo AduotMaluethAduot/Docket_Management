@@ -87,6 +87,7 @@ document.getElementById('addHearingForm').addEventListener('submit', async funct
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 action: 'add',
@@ -95,7 +96,7 @@ document.getElementById('addHearingForm').addEventListener('submit', async funct
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const result = await response.json();
@@ -107,8 +108,8 @@ document.getElementById('addHearingForm').addEventListener('submit', async funct
             throw new Error(result.message || 'Failed to schedule hearing');
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert(error.message || 'An error occurred while scheduling the hearing');
+        console.error('Error details:', error);
+        alert('An error occurred while scheduling the hearing. Please check the console for details.');
     }
 });
 </script>

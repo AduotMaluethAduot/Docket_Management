@@ -1,11 +1,32 @@
 <?php
 require_once '../includes/header.php';
 require_once '../db/config.php';
+
+// Get cases for dropdown
+$casesQuery = $conn->query("
+    SELECT c.id, c.case_number, c.case_title 
+    FROM cases c 
+    WHERE c.case_status != 'closed'
+    ORDER BY c.created_at DESC
+");
+$cases = $casesQuery ? $casesQuery->fetch_all(MYSQLI_ASSOC) : [];
 ?>
 
 <div class="container">
     <h2>Upload Document</h2>
     <form id="uploadDocumentForm" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="case_id">Select Case</label>
+            <select id="case_id" name="case_id" required>
+                <option value="">Select Case</option>
+                <?php foreach ($cases as $case): ?>
+                    <option value="<?php echo $case['id']; ?>">
+                        <?php echo htmlspecialchars($case['case_number'] . ' - ' . $case['case_title']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
         <div class="form-group">
             <label for="document_type">Document Type</label>
             <select id="document_type" name="document_type" required>
@@ -204,10 +225,16 @@ function removeFile(fileName) {
     updateFileList();
 }
 
-// Handle form submission
+// Form submission
 document.getElementById('uploadDocumentForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    const caseId = document.getElementById('case_id').value;
+    if (!caseId) {
+        alert('Please select a case');
+        return;
+    }
+
     if (files.size === 0) {
         alert('Please select at least one file to upload');
         return;
@@ -215,7 +242,7 @@ document.getElementById('uploadDocumentForm').addEventListener('submit', async f
 
     const formData = new FormData();
     formData.append('action', 'upload');
-    formData.append('case_id', document.getElementById('case_id').value);
+    formData.append('case_id', caseId);
     formData.append('document_type', document.getElementById('document_type').value);
     formData.append('notes', document.getElementById('notes').value);
     
@@ -228,6 +255,10 @@ document.getElementById('uploadDocumentForm').addEventListener('submit', async f
             method: 'POST',
             body: formData
         });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
 
         const data = await response.json();
         
