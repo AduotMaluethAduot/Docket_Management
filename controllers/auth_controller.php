@@ -23,7 +23,7 @@ try {
                     throw new Exception('Username and password are required');
                 }
 
-                $stmt = $conn->prepare("SELECT id, username, password, role FROM users WHERE username = ?");
+                $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
                 $stmt->bind_param("s", $input['username']);
                 $stmt->execute();
                 $result = $stmt->get_result();
@@ -33,15 +33,13 @@ try {
                     if (password_verify($input['password'], $user['password'])) {
                         $_SESSION['user_id'] = $user['id'];
                         $_SESSION['username'] = $user['username'];
-                        $_SESSION['role'] = $user['role'];
                         
                         $response = [
                             'success' => true,
                             'message' => 'Login successful',
                             'user' => [
                                 'id' => $user['id'],
-                                'username' => $user['username'],
-                                'role' => $user['role']
+                                'username' => $user['username']
                             ]
                         ];
                     } else {
@@ -81,7 +79,7 @@ try {
                 $hashed_password = password_hash($input['password'], PASSWORD_DEFAULT);
 
                 // Insert new user
-                $insert_stmt = $conn->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 'user')");
+                $insert_stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
                 $insert_stmt->bind_param("sss", $input['username'], $input['email'], $hashed_password);
                 
                 if ($insert_stmt->execute()) {
