@@ -1,0 +1,256 @@
+
+/* Welcome Section */
+.welcome {
+    position: absolute;
+    top: 20px; /* Adjust spacing from the top */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    z-index: 1000; /* Ensure it appears on top of other elements */
+}
+.welcome h2 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: #0055A4; /* Navy Blue */
+}
+
+.welcome p {
+    margin: 0.5rem 0 0;
+    font-size: 1rem;
+    color: #520404; /* Dark Red */
+}
+
+
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #520404;
+}
+
+/* Header Styles */
+.header {
+    background-color: #12273b; /* Navy Blue */
+    color: rgb(243, 178, 178);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+.header .nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 1rem;
+}
+
+.header .login-btn {
+    background: #FF6A3D; /* Orange */
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    color: white;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+.header .login-btn:hover {
+    background: #FF4D00; /* Darker Orange */
+}
+
+/* Hero Section */
+.hero {
+    height: 100vh;
+    background: url('../images/Aduot_Law.png') no-repeat center center/cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    text-align: center;
+    padding: 5rem 2rem;
+    filter: brightness(0.5);
+}
+
+.hero h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.hero .cta-btn {
+    background: #FF6A3D; /* Orange */
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    color: rgb(168, 146, 156);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+}
+
+.hero .cta-btn:hover {
+    background: #53515f; /* Darker Orange */
+}
+
+/* Features Section */
+.features {
+    background: #555050;
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.features h2 {
+    margin-bottom: 2rem;
+}
+
+.feature-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: rgb(208, 206, 214);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(190, 167, 167, 0.1);
+    text-align: center;
+}
+
+.card h3 {
+    margin-bottom: 0.5rem;
+    color: #0055A4; /* Navy Blue */
+}
+
+/* About Section */
+.about {
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.about p {
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Footer Styles */
+.footer {
+    background: #d2cfda;
+    color: rgb(97, 90, 114);
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.footer a {
+    color: #FF6A3D; /* Orange */
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: #FF4D00; /* Darker Orange */
+}
+
+/* Large Screens (Desktops) */
+@media (min-width: 1024px) {
+    .hero h2 {
+        font-size: 3rem;
+    }
+
+    .features {
+        padding: 4rem 3rem;
+    }
+
+    .feature-cards {
+        grid-template-columns: repeat(3, 1fr); /* 3 columns for larger screens */
+    }
+}
+
+/* Medium Screens (Tablets) */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .header {
+        flex-direction: column; /* Stack header elements */
+        align-items: flex-start;
+    }
+
+    .hero {
+        height: 80vh;
+        padding: 4rem 1rem;
+    }
+
+    .hero h2 {
+        font-size: 2rem;
+    }
+
+    .hero .cta-btn {
+        font-size: 0.9rem;
+    }
+
+    .features {
+        padding: 2rem 1.5rem;
+    }
+
+    .feature-cards {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns for tablets */
+    }
+
+    .card {
+        padding: 1rem;
+    }
+}
+
+/* Small Screens (Mobile Phones) */
+@media (max-width: 767px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+    }
+
+    .header .nav a {
+        margin-left: 0;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero {
+        height: auto; /* Adjust to content */
+        padding: 3rem 1rem;
+    }
+
+    .hero h2 {
+        font-size: 1.5rem;
+    }
+
+    .hero .cta-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .features {
+        padding: 1.5rem 1rem;
+    }
+
+    .feature-cards {
+        grid-template-columns: 1fr; /* Single column for phones */
+    }
+
+    .card {
+        padding: 0.8rem;
+    }
+
+    .about {
+        padding: 1.5rem 1rem;
+    }
+
+    .about p {
+        font-size: 0.9rem;
+    }
+
+    .footer {
+        padding: 1.5rem 1rem;
+    }
+}
